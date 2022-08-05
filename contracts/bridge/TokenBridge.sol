@@ -19,6 +19,7 @@ contract TokenBridge is ManagerAccessControl {
         ERC20 token;
         address tokenAddress;
         TokenStatus status;
+        mapping(address => uint256) liquidBalance;
     }
 
     /// @notice Information about registered tokens
@@ -48,7 +49,9 @@ contract TokenBridge is ManagerAccessControl {
 
         require(tokens[_tokenId].status == TokenStatus.NotRegistered);
 
-        tokens[_tokenId] = TokenInfo(token, _tokenAddress, TokenStatus.Registered);
+        tokens[_tokenId].token = token;
+        tokens[_tokenId].tokenAddress = _tokenAddress;
+        tokens[_tokenId].status = TokenStatus.Registered;
 
         emit TokenRegistered(_tokenId, _tokenAddress);
     }
@@ -371,5 +374,45 @@ contract TokenBridge is ManagerAccessControl {
     {
         WithdrawLockBox memory box = withdrawBoxes[_boxID];
         return box.secretKey;
+    }
+
+    event IncreasedLiquidity(bytes32 tokenId, address provider, uint256 amount);
+    event DecreasedLiquidity(bytes32 tokenId, address provider, uint256 amount);
+
+    function increaseLiquidity(
+        bytes32 _tokenId,
+        address _provider,
+        uint256 _amount
+    ) public {
+        require(_amount > 0, "Invalid amount increase");
+        TokenStatus status = tokens[_tokenId].status;
+        ERC20 token = tokens[_tokenId].token;
+        require(status == TokenStatus.Registered);
+
+        require(_amount <= token.allowance(_provider, address(this)), "Not allowance increase liquidity");
+
+        token.transferFrom(_provider, address(this), _amount);
+        uint256 liquid = tokens[_tokenId].liquidBalance[_provider];
+        tokens[_tokenId].liquidBalance[_provider] = liquid + _amount;
+        emit IncreasedLiquidity(_tokenId, _provider, _amount);
+    }
+
+    function decreaseLiquidity(bytes32 _tokenId, uint256 _amount) public {
+        require(_amount > 0, "Invalid amount decrease");
+        TokenStatus status = tokens[_tokenId].status;
+        ERC20 token = tokens[_tokenId].token;
+        require(status == TokenStatus.Registered);
+
+        uint256 liquid = tokens[_tokenId].liquidBalance[msg.sender];
+        require(_amount <= liquid, "Insufficient user's liquidity");
+        require(_amount <= token.balanceOf(address(this)), "The liquidity is insufficient");
+        tokens[_tokenId].liquidBalance[msg.sender] = liquid - _amount;
+        token.transfer(msg.sender, _amount);
+        emit DecreasedLiquidity(_tokenId, msg.sender, _amount);
+    }
+
+    function balanceOfLiquidity(bytes32 _tokenId, address _provider) public view returns (uint256 amount) {
+        require(tokens[_tokenId].status == TokenStatus.Registered);
+        return tokens[_tokenId].liquidBalance[_provider];
     }
 }
