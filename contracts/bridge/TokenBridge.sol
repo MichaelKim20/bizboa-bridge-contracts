@@ -45,7 +45,7 @@ contract TokenBridge is ManagerAccessControl {
         active = true;
     }
 
-    /// @notice Information about registered tokens
+    /// @notice Register the ERC20 token
     /// @param _tokenId Unique ID of the token
     /// @param _tokenAddress The address of the smart contact of the token
     function registerToken(bytes32 _tokenId, address _tokenAddress) external onlyManager {
@@ -53,6 +53,7 @@ contract TokenBridge is ManagerAccessControl {
 
         ERC20 token = ERC20(_tokenAddress);
 
+        // Generate a token ID
         bytes32 tokenId = sha256(abi.encodePacked(address(this), token.name(), token.symbol()));
 
         require(tokenId == _tokenId);
@@ -64,6 +65,11 @@ contract TokenBridge is ManagerAccessControl {
         tokens[_tokenId].status = TokenStatus.Registered;
 
         emit TokenRegistered(_tokenId, _tokenAddress);
+    }
+
+    modifier onlyRegisteredToken(bytes32 _tokenId) {
+        require(tokens[_tokenId].status == TokenStatus.Registered, "E004");
+        _;
     }
 
     event ChangeTimeLock(uint256 _timeLock);
@@ -135,20 +141,24 @@ contract TokenBridge is ManagerAccessControl {
     }
 
     /// @notice Open the deposit lock box
+    /// @notice Declared payable to receive the fee as a native token
     function openDeposit(
         bytes32 _tokenId,
         bytes32 _boxID,
         uint256 _amount,
         address _withdrawAddress,
         bytes32 _secretLock
-    ) public payable onlyInvalidDepositBoxes(_boxID) {
+    ) public payable onlyInvalidDepositBoxes(_boxID) onlyRegisteredToken(_tokenId) {
+        // Check if the exchange  is activated.
         require(active, "E004");
         require(_withdrawAddress != address(0), "E003");
-        require(msg.value > 0, "E003");
 
-        IERC20 token = tokens[_tokenId].token;
+        // Check if the fee has been sent.
+        // If it is not an appropriate fee, the exchange will not take place.
+        require(msg.value > 1000000000, "E003");
 
-        require(tokens[_tokenId].status == TokenStatus.Registered, "E004");
+        ERC20 token = tokens[_tokenId].token;
+
         require(_amount <= token.allowance(msg.sender, address(this)), "E003");
         token.transferFrom(msg.sender, address(this), _amount);
 
@@ -186,7 +196,7 @@ contract TokenBridge is ManagerAccessControl {
     function expireDeposit(bytes32 _boxID) public onlyOpenDepositBoxes(_boxID) onlyExpirableDepositBoxes(_boxID) {
         DepositLockBox memory box = depositBoxes[_boxID];
         depositBoxStates[_boxID] = States.EXPIRED;
-        IERC20 token = tokens[depositBoxes[_boxID].tokenId].token;
+        ERC20 token = tokens[box.tokenId].token;
         token.transfer(box.traderAddress, box.amount);
 
         emit ExpireDeposit(_boxID);
@@ -285,13 +295,11 @@ contract TokenBridge is ManagerAccessControl {
         address _traderAddress,
         address _withdrawAddress,
         bytes32 _secretLock
-    ) public onlyManager onlyInvalidWithdrawBoxes(_boxID) {
+    ) public onlyManager onlyInvalidWithdrawBoxes(_boxID) onlyRegisteredToken(_tokenId) {
         require(_traderAddress != address(0));
         require(_withdrawAddress != address(0));
 
         IERC20 token = tokens[_tokenId].token;
-
-        require(tokens[_tokenId].status == TokenStatus.Registered, "E004");
 
         // Transfer value from the ERC20 trader to this contract.
         require(_amount <= token.balanceOf(address(this)), "E003");
@@ -389,12 +397,10 @@ contract TokenBridge is ManagerAccessControl {
         bytes32 _tokenId,
         address _provider,
         uint256 _amount
-    ) public {
+    ) public onlyRegisteredToken(_tokenId) {
         require(_amount > 0, "E003");
-        TokenStatus status = tokens[_tokenId].status;
-        ERC20 token = tokens[_tokenId].token;
-        require(status == TokenStatus.Registered);
 
+        ERC20 token = tokens[_tokenId].token;
         require(_amount <= token.allowance(_provider, address(this)), "E005");
 
         token.transferFrom(_provider, address(this), _amount);
@@ -404,11 +410,10 @@ contract TokenBridge is ManagerAccessControl {
     }
 
     /// @notice Decrease liquidity
-    function decreaseLiquidity(bytes32 _tokenId, uint256 _amount) public {
+    function decreaseLiquidity(bytes32 _tokenId, uint256 _amount) public onlyRegisteredToken(_tokenId) {
         require(_amount > 0, "E003");
-        TokenStatus status = tokens[_tokenId].status;
+
         ERC20 token = tokens[_tokenId].token;
-        require(status == TokenStatus.Registered);
 
         uint256 liquid = tokens[_tokenId].liquidBalance[msg.sender];
         require(_amount <= liquid, "E005");
@@ -419,8 +424,12 @@ contract TokenBridge is ManagerAccessControl {
     }
 
     /// @notice Returns the balance of liquidity for _provider
-    function balanceOfLiquidity(bytes32 _tokenId, address _provider) public view returns (uint256 amount) {
-        require(tokens[_tokenId].status == TokenStatus.Registered);
+    function balanceOfLiquidity(bytes32 _tokenId, address _provider)
+        public
+        view
+        onlyRegisteredToken(_tokenId)
+        returns (uint256 amount)
+    {
         return tokens[_tokenId].liquidBalance[_provider];
     }
 
