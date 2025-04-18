@@ -28,13 +28,7 @@
         "max-classes-per-file": [false, 1],
         "prefer-conditional-expression": false,
         "no-bitwise": false,
-        "variable-name": [
-            true,
-            "allow-leading-underscore",
-            "allow-pascal-case",
-            "allow-snake-case",
-            "check-format"
-        ],
+        "variable-name": [true, "allow-leading-underscore", "allow-pascal-case", "allow-snake-case", "check-format"],
         "no-implicit-dependencies": [true, "dev"]
     },
     "rulesDirectory": []

@@ -10,7 +10,7 @@
 
 import crypto from "crypto";
 import { BigNumber } from "ethers";
-import { ERC20 } from "../typechain";
+import { ERC20 } from "../typechain-types";
 
 export class ContractUtils {
     /**

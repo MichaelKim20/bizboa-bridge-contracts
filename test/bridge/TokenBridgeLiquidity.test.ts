@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import { solidity } from "ethereum-waffle";
 import { ethers, waffle } from "hardhat";
-import { TestToken, TokenBridge } from "../../typechain";
+import { TestToken, TokenBridge } from "../../typechain-types";
 import { Amount } from "../../utils/Amount";
 import { ContractUtils } from "../ContractUtils";
 
@@ -31,10 +31,10 @@ describe("Test of Increase Liquidity & Decrease Liquidity - TokenBridge", () => 
         const TokenBridgeFactory = await ethers.getContractFactory("TokenBridge");
         const TestTokenFactory = await ethers.getContractFactory("TestToken");
 
-        token_contract = await TestTokenFactory.connect(admin_signer).deploy("TokenA", "TNA", decimal);
+        token_contract = (await TestTokenFactory.connect(admin_signer).deploy("TokenA", "TNA", decimal)) as TestToken;
         await token_contract.deployed();
 
-        bridge_contract = await TokenBridgeFactory.connect(admin_signer).deploy(time_lock);
+        bridge_contract = (await TokenBridgeFactory.connect(admin_signer).deploy(time_lock)) as TokenBridge;
         await bridge_contract.deployed();
     });
 
@@ -45,10 +45,7 @@ describe("Test of Increase Liquidity & Decrease Liquidity - TokenBridge", () => 
 
     before("Register a token", async () => {
         token_id = ContractUtils.BufferToString(
-            ContractUtils.getTokenId(
-                bridge_contract.address,
-                token_contract.address
-            )
+            ContractUtils.getTokenId(bridge_contract.address, token_contract.address)
         );
         expect(await bridge_contract.connect(manager_signer).registerToken(token_id, token_contract.address)).to.emit(
             bridge_contract,

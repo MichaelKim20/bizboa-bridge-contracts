@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import { solidity } from "ethereum-waffle";
 import { ethers, waffle } from "hardhat";
-import { TestToken, TokenBridge } from "../../typechain";
+import { TestToken, TokenBridge } from "../../typechain-types";
 import { Amount } from "../../utils/Amount";
 import { ContractUtils } from "../ContractUtils";
 
@@ -41,10 +41,10 @@ describe("Test Swap of TokenBridge", () => {
         const TokenBridgeFactory = await ethers.getContractFactory("TokenBridge");
         const TestERC20Factory = await ethers.getContractFactory("TestToken");
 
-        token_ethnet = await TestERC20Factory.connect(admin_signer).deploy("TokenA", "TNA", decimal);
+        token_ethnet = (await TestERC20Factory.connect(admin_signer).deploy("TokenA", "TNA", decimal)) as TestToken;
         await token_ethnet.deployed();
 
-        token_biznet = await TestERC20Factory.connect(admin_signer).deploy("TokenA", "TNA", decimal);
+        token_biznet = (await TestERC20Factory.connect(admin_signer).deploy("TokenA", "TNA", decimal)) as TestToken;
         await token_biznet.deployed();
 
         bridge_ethnet = (await TokenBridgeFactory.connect(admin_signer).deploy(time_lock)) as TokenBridge;

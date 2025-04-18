@@ -2,7 +2,7 @@ import chai, { expect } from "chai";
 import { solidity } from "ethereum-waffle";
 import { BigNumber } from "ethers";
 import { ethers, waffle } from "hardhat";
-import { BOACoinBridge, BOATokenBridge, TestERC20 } from "../../typechain";
+import { BOACoinBridge, BOATokenBridge, TestERC20 } from "../../typechain-types";
 import { BOAToken, ContractUtils, convertBOAToken2Coin } from "../ContractUtils";
 
 import * as assert from "assert";
@@ -15,7 +15,8 @@ describe("Cross Chain HTLC Atomic Swap with ERC20", () => {
     let bridge_biznet: BOACoinBridge;
 
     const provider = waffle.provider;
-    const [admin, thief, manager, fee_manager, user_eth, user_biz, new_fee_manager, new_owner, new_manager] = provider.getWallets();
+    const [admin, thief, manager, fee_manager, user_eth, user_biz, new_fee_manager, new_owner, new_manager] =
+        provider.getWallets();
     const admin_signer = provider.getSigner(admin.address);
     const thief_signer = provider.getSigner(thief.address);
     const user_eth_signer = provider.getSigner(user_eth.address);
@@ -47,7 +48,7 @@ describe("Cross Chain HTLC Atomic Swap with ERC20", () => {
         const BOATokenBridgeFactory = await ethers.getContractFactory("BOATokenBridge");
         const TestERC20Factory = await ethers.getContractFactory("TestERC20");
 
-        token_ethnet = await TestERC20Factory.connect(admin_signer).deploy("BOSAGORA Token", "BOA1");
+        token_ethnet = (await TestERC20Factory.connect(admin_signer).deploy("BOSAGORA Token", "BOA1")) as TestERC20;
         await token_ethnet.deployed();
 
         bridge_ethnet = (await BOATokenBridgeFactory.connect(admin_signer).deploy(
@@ -482,13 +483,10 @@ describe("Cross Chain HTLC Atomic Swap with ERC20", () => {
             assert.ok(await bridge_biznet.isOwner(new_owner.address));
             assert.ok(!(await bridge_biznet.isManager(new_manager.address)));
 
-            await expect(
-                bridge_biznet.connect(admin_signer).addManager(new_manager.address)
-            ).to.be.reverted;
+            await expect(bridge_biznet.connect(admin_signer).addManager(new_manager.address)).to.be.reverted;
 
             await bridge_biznet.connect(new_owner_signer).addManager(new_manager.address);
             assert.ok(await bridge_biznet.isManager(new_manager.address));
         });
-
     });
 });

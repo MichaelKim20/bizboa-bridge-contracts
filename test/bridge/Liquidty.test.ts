@@ -1,7 +1,7 @@
 import chai, { expect } from "chai";
 import { solidity } from "ethereum-waffle";
 import { ethers, waffle } from "hardhat";
-import { BOACoinBridge, BOATokenBridge, TestERC20 } from "../../typechain";
+import { BOACoinBridge, BOATokenBridge, TestERC20 } from "../../typechain-types";
 import { BOACoin, BOAToken, ContractUtils } from "../ContractUtils";
 
 import { BigNumber } from "ethers";
@@ -34,15 +34,15 @@ describe("Test of Increase Liquidity & Decrease Liquidity - BOATokenBridge", () 
         const BOATokenBridgeFactory = await ethers.getContractFactory("BOATokenBridge");
         const TestERC20Factory = await ethers.getContractFactory("TestERC20");
 
-        token_contract = await TestERC20Factory.connect(admin_signer).deploy("BOSAGORA Token", "BOA2");
+        token_contract = (await TestERC20Factory.connect(admin_signer).deploy("BOSAGORA Token", "BOA2")) as TestERC20;
         await token_contract.deployed();
 
-        bridge_contract = await BOATokenBridgeFactory.connect(admin_signer).deploy(
+        bridge_contract = (await BOATokenBridgeFactory.connect(admin_signer).deploy(
             token_contract.address,
             time_lock,
             fee_manager.address,
             true
-        );
+        )) as BOATokenBridge;
         await bridge_contract.deployed();
     });
 
@@ -160,7 +160,7 @@ describe("Test of Increase Liquidity & Decrease Liquidity - BOACoinBridge", () =
     before(async () => {
         const BOATokenBridgeFactory = await ethers.getContractFactory("BOACoinBridge");
 
-        bridge_contract = await BOATokenBridgeFactory.deploy(time_lock, fee_manager.address, true);
+        bridge_contract = (await BOATokenBridgeFactory.deploy(time_lock, fee_manager.address, true)) as BOACoinBridge;
         await bridge_contract.deployed();
     });
 
