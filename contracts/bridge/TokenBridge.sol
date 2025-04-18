@@ -180,11 +180,10 @@ contract TokenBridge is ManagerAccessControl {
     }
 
     /// @notice Close the deposit lock box
-    function closeDeposit(bytes32 _boxID, bytes memory _secretKey)
-        public
-        onlyOpenDepositBoxes(_boxID)
-        onlyWithSecretKeyDepositBoxes(_boxID, _secretKey)
-    {
+    function closeDeposit(
+        bytes32 _boxID,
+        bytes memory _secretKey
+    ) public onlyOpenDepositBoxes(_boxID) onlyWithSecretKeyDepositBoxes(_boxID, _secretKey) {
         depositBoxes[_boxID].secretKey = _secretKey;
         depositBoxStates[_boxID] = States.CLOSED;
 
@@ -202,7 +201,9 @@ contract TokenBridge is ManagerAccessControl {
     }
 
     /// @notice Check the deposit lock box
-    function checkDeposit(bytes32 _boxID)
+    function checkDeposit(
+        bytes32 _boxID
+    )
         public
         view
         returns (
@@ -233,12 +234,9 @@ contract TokenBridge is ManagerAccessControl {
     }
 
     /// @notice Check the secret key of the deposit lock box
-    function checkSecretKeyDeposit(bytes32 _boxID)
-        public
-        view
-        onlyClosedDepositBoxes(_boxID)
-        returns (bytes memory secretKey)
-    {
+    function checkSecretKeyDeposit(
+        bytes32 _boxID
+    ) public view onlyClosedDepositBoxes(_boxID) returns (bytes memory secretKey) {
         DepositLockBox memory box = depositBoxes[_boxID];
         return box.secretKey;
     }
@@ -320,11 +318,10 @@ contract TokenBridge is ManagerAccessControl {
     }
 
     /// @notice Close the withdraw lock box
-    function closeWithdraw(bytes32 _boxID, bytes memory _secretKey)
-        public
-        onlyOpenWithdrawBoxes(_boxID)
-        onlyWithSecretKeyWithdrawBoxes(_boxID, _secretKey)
-    {
+    function closeWithdraw(
+        bytes32 _boxID,
+        bytes memory _secretKey
+    ) public onlyOpenWithdrawBoxes(_boxID) onlyWithSecretKeyWithdrawBoxes(_boxID, _secretKey) {
         WithdrawLockBox memory box = withdrawBoxes[_boxID];
         IERC20 token = tokens[box.tokenId].token;
 
@@ -349,7 +346,9 @@ contract TokenBridge is ManagerAccessControl {
     }
 
     /// @notice Check the withdraw lock box
-    function checkWithdraw(bytes32 _boxID)
+    function checkWithdraw(
+        bytes32 _boxID
+    )
         public
         view
         returns (
@@ -378,12 +377,9 @@ contract TokenBridge is ManagerAccessControl {
     }
 
     /// @notice Check the secret key of the withdraw lock box
-    function checkSecretKeyWithdraw(bytes32 _boxID)
-        public
-        view
-        onlyClosedWithdrawBoxes(_boxID)
-        returns (bytes memory secretKey)
-    {
+    function checkSecretKeyWithdraw(
+        bytes32 _boxID
+    ) public view onlyClosedWithdrawBoxes(_boxID) returns (bytes memory secretKey) {
         WithdrawLockBox memory box = withdrawBoxes[_boxID];
         return box.secretKey;
     }
@@ -392,10 +388,7 @@ contract TokenBridge is ManagerAccessControl {
     event DecreasedLiquidity(bytes32 tokenId, address provider, uint256 amount);
 
     /// @notice Increase liquidity
-    function increaseLiquidity(
-        bytes32 _tokenId,
-        uint256 _amount
-    ) public onlyRegisteredToken(_tokenId) {
+    function increaseLiquidity(bytes32 _tokenId, uint256 _amount) public onlyRegisteredToken(_tokenId) {
         require(_amount > 0, "E003");
 
         ERC20 token = tokens[_tokenId].token;
@@ -422,12 +415,10 @@ contract TokenBridge is ManagerAccessControl {
     }
 
     /// @notice Returns the balance of liquidity for _provider
-    function balanceOfLiquidity(bytes32 _tokenId, address _provider)
-        public
-        view
-        onlyRegisteredToken(_tokenId)
-        returns (uint256 amount)
-    {
+    function balanceOfLiquidity(
+        bytes32 _tokenId,
+        address _provider
+    ) public view onlyRegisteredToken(_tokenId) returns (uint256 amount) {
         return tokens[_tokenId].liquidBalance[_provider];
     }
 

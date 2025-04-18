@@ -41,7 +41,7 @@ contract ManagerAccessControl is AccessControl, Ownable {
     }
 
     /// @dev Transfer Ownership and Role
-    function transferOwnership(address newOwner) public override virtual onlyOwner {
+    function transferOwnership(address newOwner) public virtual override onlyOwner {
         require(newOwner != address(0), "Ownable: new owner is the zero address");
         address oldOwner = owner();
         _transferOwnership(newOwner);

@@ -14,11 +14,7 @@ contract BOACoinBridge is ManagerAccessControl {
     bool private active;
 
     /// @dev Add `root` to the manager role as a member.
-    constructor(
-        uint256 _timeLock,
-        address _feeManagerAddress,
-        bool _collectFee
-    ) {
+    constructor(uint256 _timeLock, address _feeManagerAddress, bool _collectFee) {
         depositTimeLock = _timeLock * 2;
         withdrawTimeLock = _timeLock;
         feeManagerAddress = _feeManagerAddress;
@@ -146,11 +142,10 @@ contract BOACoinBridge is ManagerAccessControl {
         emit OpenDeposit(_boxID, _secretLock);
     }
 
-    function closeDeposit(bytes32 _boxID, bytes memory _secretKey)
-        public
-        onlyOpenDepositBoxes(_boxID)
-        onlyWithSecretKeyDepositBoxes(_boxID, _secretKey)
-    {
+    function closeDeposit(
+        bytes32 _boxID,
+        bytes memory _secretKey
+    ) public onlyOpenDepositBoxes(_boxID) onlyWithSecretKeyDepositBoxes(_boxID, _secretKey) {
         if (collectFee) {
             DepositLockBox memory box = depositBoxes[_boxID];
             liquidBalance[feeManagerAddress] = SafeMath.add(
@@ -178,7 +173,9 @@ contract BOACoinBridge is ManagerAccessControl {
         emit ExpireDeposit(_boxID);
     }
 
-    function checkDeposit(bytes32 _boxID)
+    function checkDeposit(
+        bytes32 _boxID
+    )
         public
         view
         returns (
@@ -208,12 +205,9 @@ contract BOACoinBridge is ManagerAccessControl {
         );
     }
 
-    function checkSecretKeyDeposit(bytes32 _boxID)
-        public
-        view
-        onlyClosedDepositBoxes(_boxID)
-        returns (bytes memory secretKey)
-    {
+    function checkSecretKeyDeposit(
+        bytes32 _boxID
+    ) public view onlyClosedDepositBoxes(_boxID) returns (bytes memory secretKey) {
         DepositLockBox memory box = depositBoxes[_boxID];
         return box.secretKey;
     }
@@ -300,11 +294,10 @@ contract BOACoinBridge is ManagerAccessControl {
         emit OpenWithdraw(_boxID, _secretLock);
     }
 
-    function closeWithdraw(bytes32 _boxID, bytes memory _secretKey)
-        public
-        onlyOpenWithdrawBoxes(_boxID)
-        onlyWithSecretKeyWithdrawBoxes(_boxID, _secretKey)
-    {
+    function closeWithdraw(
+        bytes32 _boxID,
+        bytes memory _secretKey
+    ) public onlyOpenWithdrawBoxes(_boxID) onlyWithSecretKeyWithdrawBoxes(_boxID, _secretKey) {
         WithdrawLockBox memory box = withdrawBoxes[_boxID];
 
         uint256 totalFee = SafeMath.add(box.swapFee, box.txFee);
@@ -339,7 +332,9 @@ contract BOACoinBridge is ManagerAccessControl {
         emit ExpireWithdraw(_boxID);
     }
 
-    function checkWithdraw(bytes32 _boxID)
+    function checkWithdraw(
+        bytes32 _boxID
+    )
         public
         view
         returns (
@@ -369,12 +364,9 @@ contract BOACoinBridge is ManagerAccessControl {
         );
     }
 
-    function checkSecretKeyWithdraw(bytes32 _boxID)
-        public
-        view
-        onlyClosedWithdrawBoxes(_boxID)
-        returns (bytes memory secretKey)
-    {
+    function checkSecretKeyWithdraw(
+        bytes32 _boxID
+    ) public view onlyClosedWithdrawBoxes(_boxID) returns (bytes memory secretKey) {
         WithdrawLockBox memory box = withdrawBoxes[_boxID];
         return box.secretKey;
     }
