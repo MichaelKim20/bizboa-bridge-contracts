@@ -28,45 +28,6 @@ function getAccounts() {
     if (HardhatAccount.keys.length !== 0) return HardhatAccount.keys;
 
     const accounts: string[] = [];
-    const reg_bytes64: RegExp = /^(0x)[0-9a-f]{64}$/i;
-    const reg_bytes40: RegExp = /^(0x)[0-9a-f]{40}$/i;
-    if (
-        process.env.ADMIN_KEY === undefined ||
-        process.env.ADMIN_KEY.trim() === "" ||
-        !reg_bytes64.test(process.env.ADMIN_KEY)
-    ) {
-        console.log("환경 변수에 `ADMIN_KEY` 이 존재하지 않아서 무작위로 생성합니다.");
-        process.env.ADMIN_KEY = Wallet.createRandom().privateKey;
-        accounts.push(process.env.ADMIN_KEY);
-    }
-    if (
-        process.env.MANAGER_KEY === undefined ||
-        process.env.MANAGER_KEY.trim() === "" ||
-        !reg_bytes64.test(process.env.MANAGER_KEY)
-    ) {
-        console.log("환경 변수에 `MANAGER_KEY` 이 존재하지 않아서 무작위로 생성합니다.");
-        process.env.MANAGER_KEY = Wallet.createRandom().privateKey;
-        accounts.push(process.env.MANAGER_KEY);
-    }
-    if (
-        process.env.USER_KEY === undefined ||
-        process.env.USER_KEY.trim() === "" ||
-        !reg_bytes64.test(process.env.USER_KEY)
-    ) {
-        console.log("환경 변수에 `USER_KEY` 이 존재하지 않아서 무작위로 생성합니다.");
-        process.env.USER_KEY = Wallet.createRandom().privateKey;
-        accounts.push(process.env.USER_KEY);
-    }
-
-    if (
-        process.env.FEE_MANAGER_ADDRESS === undefined ||
-        process.env.FEE_MANAGER_ADDRESS.trim() === "" ||
-        !reg_bytes40.test(process.env.FEE_MANAGER_ADDRESS)
-    ) {
-        console.log("환경 변수에 `FEE_MANAGER_ADDRESS` 이 존재하지 않아서 무작위로 생성합니다.");
-        process.env.FEE_MANAGER_ADDRESS = Wallet.createRandom().address;
-    }
-
     while (accounts.length < 10) {
         accounts.push(Wallet.createRandom().privateKey);
     }

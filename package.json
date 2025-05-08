@@ -22,6 +22,7 @@
         "deploy:eth:mainnet:standalone": "ENV_NETWORK=mainnet hardhat run deploy/eth/deploy.ts --network standalone",
         "report:eth:mainnet:standalone": "ENV_NETWORK=mainnet hardhat run deploy/eth/report.ts --network standalone",
         "deploy:eth:testnet": "ENV_NETWORK=testnet hardhat run deploy/eth/deploy.ts --network sepolia",
+        "report:eth:testnet": "ENV_NETWORK=testnet hardhat run deploy/eth/report.ts --network sepolia",
         "deploy:eth:testnet:standalone": "ENV_NETWORK=testnet hardhat run deploy/eth/deploy.ts --network standalone",
         "report:eth:testnet:standalone": "ENV_NETWORK=testnet hardhat run deploy/eth/report.ts --network standalone",
         "test:Bridge": "ENV_NETWORK=hardhat node_modules/.bin/hardhat test test/bridge/Bridge.test.ts",

@@ -29,7 +29,7 @@ export const CHAIN_INFORMATION: { [key: string]: IChainInfo } = {
     },
     11155111: {
         boaAddress: "0x0195a6DD3Aa109567bb38958D48a86b3A08BC48b",
-        bridgeAddress: AddressZero,
+        bridgeAddress: "0xcC9Ca8D27a7E57b9e90A24F29C4f3dc80A6Dd020",
         timeLock: 60 * 60 * 24,
         managerAddress: "0xAe3CF2FA59c59a2baAf3bFDF29DCF8537Fa88692",
         feeManagerAddress: "0x7c46A24C574B865E0f48E4FC0D52D95cF8a5B4C1",
