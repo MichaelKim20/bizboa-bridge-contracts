@@ -1,0 +1,22 @@
+services:
+  node:
+    container_name: node
+    image: bosagora/agora-el-node:v2.0.1
+    ports:
+      - "8545:8545"
+    restart: always
+    volumes:
+      - ../chain/chain:/data
+      - ../chain/config:/config
+    command:
+      --config=/config/config.toml
+      --datadir=/data
+      --syncmode=full
+      --gcmode=archive
+      --allow-insecure-unlock=true
+      --unlock=0xF85B2dbA83A08DEe6E24E4461E0334e7384896F9
+      --password=/config/private/password.txt
+      --mine=true
+      --miner.etherbase=0xF85B2dbA83A08DEe6E24E4461E0334e7384896F9
+      --http.corsdomain="*"
+

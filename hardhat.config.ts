@@ -96,35 +96,11 @@ function getLedgerAccounts() {
     const reg_bytes64: RegExp = /^(0x)[0-9a-f]{40}$/i;
 
     if (
-        process.env.ADMIN_ADDRESS !== undefined &&
-        process.env.ADMIN_ADDRESS.trim() !== "" &&
-        reg_bytes64.test(process.env.ADMIN_ADDRESS)
+        process.env.DEPLOYER_ADDRESS !== undefined &&
+        process.env.DEPLOYER_ADDRESS.trim() !== "" &&
+        reg_bytes64.test(process.env.DEPLOYER_ADDRESS)
     ) {
-        addresses.push(process.env.ADMIN_ADDRESS);
-    }
-
-    if (
-        process.env.MANAGER_ADDRESS !== undefined &&
-        process.env.MANAGER_ADDRESS.trim() !== "" &&
-        reg_bytes64.test(process.env.MANAGER_ADDRESS)
-    ) {
-        addresses.push(process.env.MANAGER_ADDRESS);
-    }
-
-    if (
-        process.env.USER_ADDRESS !== undefined &&
-        process.env.USER_ADDRESS.trim() !== "" &&
-        reg_bytes64.test(process.env.USER_ADDRESS)
-    ) {
-        addresses.push(process.env.USER_ADDRESS);
-    }
-
-    if (
-        process.env.FEE_MANAGER_ADDRESS !== undefined &&
-        process.env.FEE_MANAGER_ADDRESS.trim() !== "" &&
-        reg_bytes64.test(process.env.FEE_MANAGER_ADDRESS)
-    ) {
-        addresses.push(process.env.FEE_MANAGER_ADDRESS);
+        addresses.push(process.env.DEPLOYER_ADDRESS);
     }
 
     for (const account of addresses) {
@@ -166,6 +142,11 @@ const config = {
         sepolia: {
             url: process.env.SEPOLIA_URL || "",
             chainId: 11155111,
+            ledgerAccounts: getLedgerAccounts(),
+        },
+        standalone: {
+            url: process.env.URL_STANDALONE,
+            chainId: 24680,
             ledgerAccounts: getLedgerAccounts(),
         },
     },

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+./cmd.sh clear-chain
+./cmd.sh start-chain

@@ -10,3 +10,5 @@ cache
 artifacts
 
 .idea
+
+deploy/network/chain/chain/*
