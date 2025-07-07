@@ -153,6 +153,9 @@ async function deployBridge(accounts: IAccount, deployment: Deployments) {
 
         const timeLock = CHAIN_INFORMATION[deployment.chainId].timeLock;
         const feeManagerAddress = CHAIN_INFORMATION[deployment.chainId].feeManagerAddress;
+
+        console.log(`accounts.deployer ${await accounts.deployer.getAddress()}`);
+
         const factory = (await ethers.getContractFactory("BOATokenBridge")) as BOATokenBridge__factory;
         const contract = (await factory
             .connect(accounts.deployer)

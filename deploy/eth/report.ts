@@ -22,9 +22,9 @@ interface IChainInfo {
 export const CHAIN_INFORMATION: { [key: string]: IChainInfo } = {
     1: {
         boaAddress: "0x51bD4f39803fcAEFf3ef45aae2C3aaFf0B9faDcb",
-        bridgeAddress: AddressZero,
+        bridgeAddress: "0x2792e81BA64a99aB148FE202e938fbB97947232C",
         timeLock: 60 * 60 * 24,
-        managerAddress: "0x57e28abec087e7f3dbe4090a1352b32538f5d390",
+        managerAddress: "0x57e28ABEC087E7F3dbe4090A1352b32538f5D390",
         feeManagerAddress: "0x064c9Fc53d5936792845ca58778a52317fCf47F2",
     },
     11155111: {
@@ -35,8 +35,8 @@ export const CHAIN_INFORMATION: { [key: string]: IChainInfo } = {
         feeManagerAddress: "0x7c46A24C574B865E0f48E4FC0D52D95cF8a5B4C1",
     },
     24680: {
-        boaAddress: AddressZero,
-        bridgeAddress: AddressZero,
+        boaAddress: "0xFaf0edD743eFde279211ed27733F62E5D7055f31",
+        bridgeAddress: "0x6e2bE29d0868B39E9502a987AA4a04Eafa7A5E32",
         timeLock: 60 * 60 * 24,
         managerAddress: "0xAe3CF2FA59c59a2baAf3bFDF29DCF8537Fa88692",
         feeManagerAddress: "0x7c46A24C574B865E0f48E4FC0D52D95cF8a5B4C1",
@@ -210,13 +210,13 @@ async function report(accounts: IAccount, deployment: Deployments) {
 
     console.log(`3. Balances (ETH)`);
     console.log(
-        `Balance, deployer : ${new BOACoin(await ethers.provider.getBalance(deployerAddress)).toDisplayString(true, 2)}`
+        `Balance, deployer : ${new BOACoin(await ethers.provider.getBalance(deployerAddress)).toDisplayString(true, 5)}`
     );
     console.log(
-        `Balance, Bridger : ${new BOACoin(await ethers.provider.getBalance(bridge.address)).toDisplayString(true, 2)}`
+        `Balance, Bridger : ${new BOACoin(await ethers.provider.getBalance(bridge.address)).toDisplayString(true, 5)}`
     );
     console.log(
-        `Balance, Manager : ${new BOACoin(await ethers.provider.getBalance(managerAddress)).toDisplayString(true, 2)}`
+        `Balance, Manager : ${new BOACoin(await ethers.provider.getBalance(managerAddress)).toDisplayString(true, 5)}`
     );
 }
 

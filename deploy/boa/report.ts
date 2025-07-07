@@ -2,8 +2,7 @@ import "@nomiclabs/hardhat-ethers";
 import { ethers } from "hardhat";
 
 import { HardhatAccount } from "../../src/HardhatAccount";
-import { BOAToken } from "../../src/utils/Amount";
-import { BOATokenBridge, BOATokenBridge__factory, ERC20, TestToken, TestToken__factory } from "../../typechain-types";
+import { BOACoinBridge, BOACoinBridge__factory, ERC20 } from "../../typechain-types";
 
 import { Signer } from "@ethersproject/abstract-signer";
 import { AddressZero } from "@ethersproject/constants";
@@ -20,16 +19,16 @@ interface IChainInfo {
 }
 
 export const CHAIN_INFORMATION: { [key: string]: IChainInfo } = {
-    1: {
+    2151: {
         boaAddress: "0x51bD4f39803fcAEFf3ef45aae2C3aaFf0B9faDcb",
-        bridgeAddress: AddressZero,
+        bridgeAddress: "0x95075eDc815e9Cd62Ff6D4598ea922307416B452",
         timeLock: 60 * 60 * 24,
         managerAddress: "0x57e28abec087e7f3dbe4090a1352b32538f5d390",
         feeManagerAddress: "0x064c9Fc53d5936792845ca58778a52317fCf47F2",
     },
-    11155111: {
-        boaAddress: AddressZero,
-        bridgeAddress: AddressZero,
+    2019: {
+        boaAddress: "0x0195a6DD3Aa109567bb38958D48a86b3A08BC48b",
+        bridgeAddress: "0x1296aCf5d1F8Fbb9097fb2Ace1C4B5E3421050bE",
         timeLock: 60 * 60 * 24,
         managerAddress: "0xAe3CF2FA59c59a2baAf3bFDF29DCF8537Fa88692",
         feeManagerAddress: "0x7c46A24C574B865E0f48E4FC0D52D95cF8a5B4C1",
@@ -123,16 +122,8 @@ class Deployments {
 
     public async attach() {
         {
-            const contractName = "BOAToken";
-            const factory = (await ethers.getContractFactory("TestToken")) as TestToken__factory;
-            const contract = factory.attach(CHAIN_INFORMATION[this.chainId].boaAddress);
-            this.addContract(contractName, contract.address, contract);
-            console.log(`Attached ${contractName} to ${contract.address}`);
-        }
-
-        {
-            const contractName = "BOATokenBridge";
-            const factory = (await ethers.getContractFactory("BOATokenBridge")) as BOATokenBridge__factory;
+            const contractName = "BOACoinBridge";
+            const factory = (await ethers.getContractFactory("BOACoinBridge")) as BOACoinBridge__factory;
             const contract = factory.attach(CHAIN_INFORMATION[this.chainId].bridgeAddress);
             this.addContract(contractName, contract.address, contract);
             console.log(`Attached ${contractName} to ${contract.address}`);
@@ -147,7 +138,7 @@ async function assignManager(accounts: IAccount, deployment: Deployments) {
         return;
     }
 
-    const bridge = deployment.getContract("BOATokenBridge") as BOATokenBridge;
+    const bridge = deployment.getContract("BOACoinBridge") as BOACoinBridge;
     const managerAddress = CHAIN_INFORMATION[deployment.chainId].managerAddress;
     if (!(await bridge.isManager(managerAddress))) {
         const tx = await bridge.addManager(managerAddress);
@@ -164,7 +155,7 @@ async function unassignManager(accounts: IAccount, deployment: Deployments) {
         return;
     }
 
-    const bridge = deployment.getContract("BOATokenBridge") as BOATokenBridge;
+    const bridge = deployment.getContract("BOACoinBridge") as BOACoinBridge;
     const managerAddress = CHAIN_INFORMATION[deployment.chainId].managerAddress;
     if (!(await bridge.isManager(managerAddress))) {
         const tx = await bridge.removeManager(managerAddress);
@@ -175,22 +166,17 @@ async function unassignManager(accounts: IAccount, deployment: Deployments) {
 }
 
 async function report(accounts: IAccount, deployment: Deployments) {
-    if (deployment.getContract("BOAToken") === undefined) {
-        console.error("OldBOAToken is not deployed!");
-        return;
-    }
-    if (deployment.getContract("BOATokenBridge") === undefined) {
-        console.error("BOATokenBridge is not deployed!");
+    if (deployment.getContract("BOACoinBridge") === undefined) {
+        console.error("BOACoinBridge is not deployed!");
         return;
     }
 
-    const token = deployment.getContract("BOAToken") as ERC20;
-    const bridge = deployment.getContract("BOATokenBridge") as BOATokenBridge;
+    const token = deployment.getContract("BOACoin") as ERC20;
+    const bridge = deployment.getContract("BOACoinBridge") as BOACoinBridge;
     const deployerAddress = await accounts.deployer.getAddress();
 
     console.log(`Report`);
     console.log(`1. Addresses`);
-    console.log(`BOA: ${token.address}`);
     console.log(`Bridger: ${bridge.address}`);
     console.log(`Deployer: ${deployerAddress}`);
     console.log(`Manager: ${CHAIN_INFORMATION[deployment.chainId].managerAddress}`);
@@ -204,11 +190,6 @@ async function report(accounts: IAccount, deployment: Deployments) {
     console.log(`FeeManager : ${await bridge.getFeeManager()}`);
 
     console.log(`3. Balances (BOA)`);
-    console.log(`Balance, deployer : ${new BOAToken(await token.balanceOf(deployerAddress)).toDisplayString(true, 2)}`);
-    console.log(`Balance, Bridger : ${new BOAToken(await token.balanceOf(bridge.address)).toDisplayString(true, 2)}`);
-    console.log(`Balance, Manager : ${new BOAToken(await token.balanceOf(managerAddress)).toDisplayString(true, 2)}`);
-
-    console.log(`3. Balances (ETH)`);
     console.log(
         `Balance, deployer : ${new BOACoin(await ethers.provider.getBalance(deployerAddress)).toDisplayString(true, 2)}`
     );
