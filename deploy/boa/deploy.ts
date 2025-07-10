@@ -14,6 +14,7 @@ import { BOACoin } from "../../utils/Amount";
 interface IChainInfo {
     boaAddress: string;
     bridgeAddress: string;
+    bridgeOwner: string;
     timeLock: number;
     managerAddress: string;
     feeManagerAddress: string;
@@ -23,13 +24,31 @@ export const CHAIN_INFORMATION: { [key: string]: IChainInfo } = {
     1: {
         boaAddress: "0x51bD4f39803fcAEFf3ef45aae2C3aaFf0B9faDcb",
         bridgeAddress: AddressZero,
+        bridgeOwner: "0xD871310905303fD11d50CE5006d7B8844155D3BD",
         timeLock: 60 * 60 * 24,
-        managerAddress: "0x57e28abec087e7f3dbe4090a1352b32538f5d390",
+        managerAddress: "0xf66107cE2f17b94b7bB40e1e7274fa4962915551",
+        feeManagerAddress: "0x064c9Fc53d5936792845ca58778a52317fCf47F2",
+    },
+    2151: {
+        boaAddress: AddressZero,
+        bridgeAddress: "0x95075eDc815e9Cd62Ff6D4598ea922307416B452",
+        bridgeOwner: "0xD871310905303fD11d50CE5006d7B8844155D3BD",
+        timeLock: 60 * 60 * 24,
+        managerAddress: "0xf66107cE2f17b94b7bB40e1e7274fa4962915551",
         feeManagerAddress: "0x064c9Fc53d5936792845ca58778a52317fCf47F2",
     },
     11155111: {
         boaAddress: "0x0195a6DD3Aa109567bb38958D48a86b3A08BC48b",
-        bridgeAddress: AddressZero,
+        bridgeAddress: "0x1296aCf5d1F8Fbb9097fb2Ace1C4B5E3421050bE",
+        bridgeOwner: "0x4adB23668AA8742F3c36C0103e0347140E59d60a",
+        timeLock: 60 * 60 * 24,
+        managerAddress: "0xAe3CF2FA59c59a2baAf3bFDF29DCF8537Fa88692",
+        feeManagerAddress: "0x7c46A24C574B865E0f48E4FC0D52D95cF8a5B4C1",
+    },
+    2019: {
+        boaAddress: AddressZero,
+        bridgeAddress: "0xcC9Ca8D27a7E57b9e90A24F29C4f3dc80A6Dd020",
+        bridgeOwner: "0x4adB23668AA8742F3c36C0103e0347140E59d60a",
         timeLock: 60 * 60 * 24,
         managerAddress: "0xAe3CF2FA59c59a2baAf3bFDF29DCF8537Fa88692",
         feeManagerAddress: "0x7c46A24C574B865E0f48E4FC0D52D95cF8a5B4C1",
@@ -37,6 +56,7 @@ export const CHAIN_INFORMATION: { [key: string]: IChainInfo } = {
     24680: {
         boaAddress: AddressZero,
         bridgeAddress: AddressZero,
+        bridgeOwner: "0x4adB23668AA8742F3c36C0103e0347140E59d60a",
         timeLock: 60 * 60 * 24,
         managerAddress: "0xAe3CF2FA59c59a2baAf3bFDF29DCF8537Fa88692",
         feeManagerAddress: "0x7c46A24C574B865E0f48E4FC0D52D95cF8a5B4C1",
@@ -122,25 +142,6 @@ class Deployments {
     }
 }
 
-async function deployBOAToken(accounts: IAccount, deployment: Deployments) {
-    const contractName = "BOAToken";
-    if (CHAIN_INFORMATION[deployment.chainId].boaAddress === AddressZero) {
-        console.log(`Deploy ${contractName}...`);
-        const factory = (await ethers.getContractFactory("TestToken")) as TestToken__factory;
-        const contract = (await factory.connect(accounts.deployer).deploy("BOSAGORA", "BOA", 7)) as TestToken;
-        await contract.deployed();
-        await contract.deployTransaction.wait();
-        deployment.addContract(contractName, contract.address, contract);
-        console.log(`Deployed ${contractName} to ${contract.address}`);
-    } else {
-        console.log(`Attach ${contractName}...`);
-        const factory = (await ethers.getContractFactory("TestToken")) as TestToken__factory;
-        const contract = factory.attach(CHAIN_INFORMATION[deployment.chainId].boaAddress);
-        deployment.addContract(contractName, contract.address, contract);
-        console.log(`Attached ${contractName} to ${contract.address}`);
-    }
-}
-
 async function deployBridge(accounts: IAccount, deployment: Deployments) {
     const contractName = "BOACoinBridge";
     if (CHAIN_INFORMATION[deployment.chainId].bridgeAddress === AddressZero) {
@@ -181,23 +182,34 @@ async function assignManager(accounts: IAccount, deployment: Deployments) {
     console.log(`End Assign Manager to ${managerAddress}`);
 }
 
-async function report(accounts: IAccount, deployment: Deployments) {
-    if (deployment.getContract("BOAToken") === undefined) {
-        console.error("OldBOAToken is not deployed!");
-        return;
-    }
+async function changeOwner(accounts: IAccount, deployment: Deployments) {
+    console.log(`Start Assign Manager`);
     if (deployment.getContract("BOACoinBridge") === undefined) {
         console.error("BOACoinBridge is not deployed!");
         return;
     }
 
-    const token = deployment.getContract("BOAToken") as ERC20;
+    const bridge = deployment.getContract("BOACoinBridge") as BOACoinBridge;
+    const bridgeOwner = CHAIN_INFORMATION[deployment.chainId].bridgeOwner;
+
+    const tx = await bridge.transferOwnership(bridgeOwner);
+    console.log(`Transfer Ownership (tx: ${tx.hash})...`);
+    await tx.wait();
+
+    console.log(`Transfer Ownership to ${bridgeOwner}`);
+}
+
+async function report(accounts: IAccount, deployment: Deployments) {
+    if (deployment.getContract("BOACoinBridge") === undefined) {
+        console.error("BOACoinBridge is not deployed!");
+        return;
+    }
+
     const bridge = deployment.getContract("BOACoinBridge") as BOACoinBridge;
     const deployerAddress = await accounts.deployer.getAddress();
 
     console.log(`Report`);
     console.log(`1. Addresses`);
-    console.log(`BOA: ${token.address}`);
     console.log(`Bridger: ${bridge.address}`);
     console.log(`Deployer: ${deployerAddress}`);
     console.log(`Manager: ${CHAIN_INFORMATION[deployment.chainId].managerAddress}`);
@@ -211,11 +223,6 @@ async function report(accounts: IAccount, deployment: Deployments) {
     console.log(`FeeManager : ${await bridge.getFeeManager()}`);
 
     console.log(`3. Balances (BOA)`);
-    console.log(`Balance, deployer : ${new BOAToken(await token.balanceOf(deployerAddress)).toDisplayString(true, 2)}`);
-    console.log(`Balance, Bridger : ${new BOAToken(await token.balanceOf(bridge.address)).toDisplayString(true, 2)}`);
-    console.log(`Balance, Manager : ${new BOAToken(await token.balanceOf(managerAddress)).toDisplayString(true, 2)}`);
-
-    console.log(`3. Balances (ETH)`);
     console.log(
         `Balance, deployer : ${new BOACoin(await ethers.provider.getBalance(deployerAddress)).toDisplayString(true, 2)}`
     );
@@ -233,9 +240,9 @@ async function main() {
     const deployments = new Deployments(chainId);
 
     await deployments.initAccounts();
-    deployments.addDeployer(deployBOAToken);
     deployments.addDeployer(deployBridge);
     deployments.addDeployer(assignManager);
+    // deployments.addDeployer(changeOwner);
     deployments.addDeployer(report);
     await deployments.doDeploy();
 }

@@ -13,6 +13,7 @@ import { BOACoin } from "../../utils/Amount";
 interface IChainInfo {
     boaAddress: string;
     bridgeAddress: string;
+    bridgeOwner: string;
     timeLock: number;
     managerAddress: string;
     feeManagerAddress: string;
@@ -22,6 +23,7 @@ export const CHAIN_INFORMATION: { [key: string]: IChainInfo } = {
     2151: {
         boaAddress: "0x51bD4f39803fcAEFf3ef45aae2C3aaFf0B9faDcb",
         bridgeAddress: "0x95075eDc815e9Cd62Ff6D4598ea922307416B452",
+        bridgeOwner: "0xD871310905303fD11d50CE5006d7B8844155D3BD",
         timeLock: 60 * 60 * 24,
         managerAddress: "0x57e28abec087e7f3dbe4090a1352b32538f5d390",
         feeManagerAddress: "0x064c9Fc53d5936792845ca58778a52317fCf47F2",
@@ -29,6 +31,7 @@ export const CHAIN_INFORMATION: { [key: string]: IChainInfo } = {
     2019: {
         boaAddress: "0x0195a6DD3Aa109567bb38958D48a86b3A08BC48b",
         bridgeAddress: "0x1296aCf5d1F8Fbb9097fb2Ace1C4B5E3421050bE",
+        bridgeOwner: "0x4adB23668AA8742F3c36C0103e0347140E59d60a",
         timeLock: 60 * 60 * 24,
         managerAddress: "0xAe3CF2FA59c59a2baAf3bFDF29DCF8537Fa88692",
         feeManagerAddress: "0x7c46A24C574B865E0f48E4FC0D52D95cF8a5B4C1",
@@ -36,6 +39,7 @@ export const CHAIN_INFORMATION: { [key: string]: IChainInfo } = {
     24680: {
         boaAddress: AddressZero,
         bridgeAddress: AddressZero,
+        bridgeOwner: "0x4adB23668AA8742F3c36C0103e0347140E59d60a",
         timeLock: 60 * 60 * 24,
         managerAddress: "0xAe3CF2FA59c59a2baAf3bFDF29DCF8537Fa88692",
         feeManagerAddress: "0x7c46A24C574B865E0f48E4FC0D52D95cF8a5B4C1",
@@ -171,7 +175,6 @@ async function report(accounts: IAccount, deployment: Deployments) {
         return;
     }
 
-    const token = deployment.getContract("BOACoin") as ERC20;
     const bridge = deployment.getContract("BOACoinBridge") as BOACoinBridge;
     const deployerAddress = await accounts.deployer.getAddress();
 
